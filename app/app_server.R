@@ -1273,6 +1273,7 @@ server <- function( input, output, session ){
 				
                 progress$inc(1/n, detail = "Plotting BER results.");
 				BERAnalysis$plotBERvsAc50(label_by = input$radio_listtype);
+				BERAnalysis$plotOEDvsAc50(label_by = input$radio_listtype);
 				BERAnalysis$plotBER(label_by = input$radio_listtype);
 				 
                  createBERUI( input, output, session, BERAnalysis,

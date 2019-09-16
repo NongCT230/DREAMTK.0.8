@@ -16,7 +16,8 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
 	pltBER = NULL,
 	tblBER = NULL,
 	tblMeanBER = NULL,
-	pltBERvsAc50 = NULL
+	pltBERvsAc50 = NULL,
+	pltOEDvsAc50 = NULL
 ),
 
 #public variables and functions
@@ -44,11 +45,12 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
         calc_BER_stat_tbl <- self$BERData$getCalcBERStatsTable();
 		chemical_casn_list <- unique(calc_BER_stat_tbl[["casn"]]);
 		Ac50_stat_tbl <- self$basicData$getBasicStatsTable();
-		
+		Ac50_stat_tbl<- filter(Ac50_stat_tbl, above_cutoff == "Y", ac50 >= -2, ac50 <= 1000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
 		
 		for(chemical_casn in chemical_casn_list){
 			casn_tbl <- filter(calc_BER_stat_tbl, casn == chemical_casn);
 			ac50_tbl <- filter(Ac50_stat_tbl, casn == chemical_casn);
+			ac50_tbl <- filter(ac50_tbl, ac50 > ac_cutoff);
 			avg_mean <- mean(casn_tbl$direct_ingestion + casn_tbl$direct_vapor + casn_tbl$direct_aerosol);
 			oral_ber <- (casn_tbl$direct_ingestion + casn_tbl$direct_vapor + casn_tbl$direct_aerosol);
 			avg_ac50 <- mean(10^ac50_tbl$ac50);
@@ -81,6 +83,7 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
 		BER_data <- self$BERData$getCalcBERStatsTable();
 		BER_data$oral_ber <- BER_data$direct_ingestion + BER_data$direct_vapor + BER_data$direct_aerosol;
 		basic_data <- self$basicData$getBasicStatsTable();
+		basic_data <- filter(basic_data, above_cutoff == "Y", ac50 >= -2, ac50 <= 1000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
 		if(label_by == "casn"){
 			private$pltBERvsAc50 <- plot_ly() %>%
 			  add_trace(data = BER_data, x = ~casn, y = ~signif(oral_ber, digits = 5), type = 'box', name = 'Daily Intake') %>%
@@ -102,6 +105,36 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
 		invisible(private$pltBERvsAc50);
      }   
     },
+
+	#plots the box chart comparing the values of the oral exposure vs the AC50 of chemicals
+	plotOEDvsAc50 = function( label_by = "casn"){
+	  if (self$BERData$calcBERStatsDataExists() && self$basicData$basicStatsDataExists()) {
+	    basic_data <- self$basicData$getBasicStatsTable();
+	    basic_data <- filter(basic_data, above_cutoff == "Y", ac50 >= -2, ac50 <= 1000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
+	    
+	    if(label_by == "casn"){
+	      private$pltOEDvsAc50 <- plot_ly() %>%
+	        add_trace(data = basic_data, x = ~casn, y = ~signif(10^ac50, digits = 5), type = 'box', name = 'AC50') %>%
+	        add_trace(data = basic_data, x = ~casn, y = ~signif(oed, digits = 5), type = 'box', name = 'Equivalent Dose') %>%
+	        layout(title = 'In Vitro Tox Concentrations vs Equivalent Doses',
+	               xaxis = list(title = ""),
+	               yaxis = list(title = "Dose", type = "log"));
+	      
+	    }else{
+	      private$pltOEDvsAc50 <- plot_ly() %>%
+	        add_trace(data = basic_data, x = ~name, y = ~signif(10^ac50, digits = 5), type = 'box', name = 'AC50') %>%
+	        add_trace(data = basic_data, x = ~name, y =~signif(oed, digits = 5), type = 'box', name = 'Equivalent Dose') %>%
+	        layout(title = 'In Vitro Tox Concentrations vs Equivalent Doses',
+	               xaxis = list(title = ""),
+	               yaxis = list(title = "Dose", type = "log"));
+	      
+	    }
+	    
+	    invisible(private$pltOEDvsAc50);
+	  }   
+	},
+	
+	
 	
 	#plots the BER box chart
     plotBER = function( label_by = "casn" ){
@@ -111,6 +144,7 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
     calc_BER_stat_tbl <- self$BERData$getCalcBERStatsTable();
 		chemical_casn_list <- unique(calc_BER_stat_tbl[["casn"]]);
 		Ac50_stat_tbl <- self$basicData$getBasicStatsTable();
+		Ac50_stat_tbl<- filter(Ac50_stat_tbl, above_cutoff == "Y", ac50 >= -2, ac50 <= 1000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
 		
 		for(chemical_casn in chemical_casn_list){
 			
@@ -162,6 +196,9 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
     },
 	getBERvsAc50plot = function(){
 		return (private$pltBERvsAc50);
+	},
+	getOEDvsAc50plot = function(){
+	  return (private$pltOEDvsAc50);
 	},
 	getBERplot = function(){
 		return (private$pltBER);

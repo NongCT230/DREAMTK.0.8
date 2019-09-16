@@ -224,21 +224,6 @@ getMinOED = function(chem, oed_model_name ){
 }
 
 
-#obtain minimum OED, calculate if unavailable
-#getMeanOED = function(chem, oed_model_name ){
-#  if ( !is.null(chem$analysis_results$mean_oed)) {
-#    mean_oed <- chem$analysis_results$mean_oed$value;
-#  } else {
-#    mean_oed <- NULL;
-#  }
-#  
-#  if ( is.null(mean_oed) ){
-#    mean_oed <- chem$calculateMeanOED(oed_model_name);
-#  }
-#  return ( mean_oed );
-#}
-
-
 #obtain basic chemical information
 getBasicChemInfo = function( chem, css_model_name, oed_model_name, linesep = "<br>", back, hit ){
 	#obtain css value and units
@@ -256,9 +241,6 @@ getBasicChemInfo = function( chem, css_model_name, oed_model_name, linesep = "<b
 	#obtain minimum ac50 value and units
 	min_ac50 <- getMinAc50(chem, back, hit);
 	min_ac50_units <- chem$analysis_results$min_ac50$units;
-	
-	#mean_oed <- getMeanOED(chem, oed_model_name);
-	#mean_oed_units <- chem$analysis_results$mean_oed$units;
 	
 	avg_ac50 <- getAVGAc50(chem, back, hit);
 	avg_ac50_units <- chem$analysis_results$avg_ac50$units;
@@ -306,8 +288,6 @@ getBasicChemInfo = function( chem, css_model_name, oed_model_name, linesep = "<b
 					intended_target_family = chemassayrow$intended_target_family,
 					intended_target_family_sub = chemassayrow$intended_target_family_sub,
 					gene_name = chemassayrow$gene_name,
-					#mean_oed = mean_oed,
-					#mean_oed_units = mean_oed_units,
 					min_oed = min_oed,
 					min_oed_units = min_oed_units,
 					oed_model = oed_model_name);
@@ -1122,13 +1102,46 @@ createBERUI = function( input, output, session, BERAnalysis, id ){
     selector = "#ui_ber",
     where = "beforeEnd",
 	ui = fluidRow(id = id,
-						if( BERAnalysis$BERData$calcBERStatsDataExists()){
-							box(status = "primary", title = "Consumer Products Exposition VS In Vitro Tox Equivalent Dose", collapsible = TRUE, width = 12,
+            if( BERAnalysis$BERData$calcBERStatsDataExists()){
+              box(status = "primary", title = "In Vitro Tox Concentrations vs Equivalent Doses", collapsible = TRUE, width = 12,
+                  dropdownButton(
+                    tags$h3("About plot"),
+                    HTML( 
+                      str_c( 
+                        "<p><strong>Consumer Products Exposure  BE:</strong>Consumer Products Exposure  BER of a product use category for a chemical is the summation of the direct incidental ingestion, direct aerosol ingestion and direct vapor ingestion. The value is shown in ug/day.</p>",
+                        "<p><strong>Ac50:</strong> This value is shown in uM.</p>"
+                      )
+                    ),
+                    circle = TRUE, status = "danger", icon = icon("question-circle"), width = "300px",
+                    tooltip = NULL
+                  ),
+                  br(),
+                  
+                  fluidRow(
+                    column(10, offset = 1,
+                           plotlyOutput(outputId = "plot_OED_vs_Ac50", height = 800)
+                    )
+                  )
+              )
+            }else{
+              box(status = "primary", title = "In Vitro Tox Concentrations vs Equivalent Doses", collapsible = TRUE, width = 12,
+                  column(12, offset = 0,
+                         h3("No Consumer Products Exposure Data available for the chemical(s). No graph to plot.", 
+                            id = "plot_OED_vs_Ac50", style = "color:red")
+                  )
+              )
+            },
+            
+            br(),						
+	              
+	              
+	          if( BERAnalysis$BERData$calcBERStatsDataExists()){
+							box(status = "primary", title = "Consumer Products Exposure VS In Vitro Tox Equivalent Dose", collapsible = TRUE, width = 12,
 								dropdownButton(
 									  tags$h3("About plot"),
 									  HTML( 
 										str_c( 
-												"<p><strong>Consumer Products Exposition  BE:</strong>Consumer Products Exposition  BER of a product use category for a chemical is the summation of the direct incidental ingestion, direct aerosol ingestion and direct vapor ingestion. The value is shown in ug/day.</p>",
+												"<p><strong>Consumer Products Exposure  BE:</strong>Consumer Products Exposure  BER of a product use category for a chemical is the summation of the direct incidental ingestion, direct aerosol ingestion and direct vapor ingestion. The value is shown in ug/day.</p>",
 												"<p><strong>Ac50:</strong> This value is shown in uM.</p>"
 										)
 									  ),
@@ -1144,20 +1157,22 @@ createBERUI = function( input, output, session, BERAnalysis, id ){
 								)
 							)
 						}else{
-							box(status = "primary", title = "Consumer Products Exposition VS In Vitro Tox Equivalent Dose", collapsible = TRUE, width = 12,
+							box(status = "primary", title = "Consumer Products Exposure VS In Vitro Tox Equivalent Dose", collapsible = TRUE, width = 12,
 								column(12, offset = 0,
-									h3("No Consumer Products Exposition Data available for the chemical(s). No graph to plot.", 
+									h3("No Consumer Products Exposure Data available for the chemical(s). No graph to plot.", 
 									id = "plot_BER_vs_Ac50", style = "color:red")
 								)
 							)
-						},	
+						},
+
 						br(),
+						
 						if( BERAnalysis$BERData$calcBERStatsDataExists()){
-							box(status = "primary", title = "Consumer Products Exposition Analysis Table", collapsible = TRUE, width = 12,
+							box(status = "primary", title = "Consumer Products Exposure Analysis Table", collapsible = TRUE, width = 12,
 								dropdownButton(
 									  tags$h3("About plot"),
 									  HTML( 
-										str_c( "<p>This shows the Consumer Products Exposition values in ug/day for each category of exposure.</p>")
+										str_c( "<p>This shows the Consumer Products Exposure values in ug/day for each category of exposure.</p>")
 										),
 
 									  circle = TRUE, status = "danger", icon = icon("question-circle"), witdth = "300px",
@@ -1173,7 +1188,7 @@ createBERUI = function( input, output, session, BERAnalysis, id ){
 						}else{
 							box(status = "primary", title = "BE Analysis Table", collapsible = TRUE, width = 12,
 								column(12, offset = 0,
-									h3("No Consumer Products Exposition Data available for the chemical(s). No Table to plot.", 
+									h3("No Consumer Products Exposure Data available for the chemical(s). No Table to plot.", 
 									id = "table_stats_BER", style = "color:red")
 								)
 							)
@@ -1185,8 +1200,8 @@ createBERUI = function( input, output, session, BERAnalysis, id ){
 									  tags$h3("About plot"),
 									  HTML( 
 										str_c( 
-												"<p><strong>Oral Consumer Products Exposition:</strong> Oral Consumer Products Exposition of a product use category for a chemical is the summation of the direct incidental ingestion, direct aerosol ingestion and direct vapor ingestion.</p>",
-												"<p><strong>Oral BER:</strong> Mean Ac50 of the chemical divided by Oral Consumer Products Exposition</p>"
+												"<p><strong>Oral Consumer Products Exposure:</strong> Oral Consumer Products Exposure of a product use category for a chemical is the summation of the direct incidental ingestion, direct aerosol ingestion and direct vapor ingestion.</p>",
+												"<p><strong>Oral BER:</strong> Mean Ac50 of the chemical divided by Oral Consumer Products Exposure</p>"
 										)
 									  ),
 									  circle = TRUE, status = "danger", icon = icon("question-circle"), width = "300px",
@@ -1215,9 +1230,9 @@ createBERUI = function( input, output, session, BERAnalysis, id ){
 								dropdownButton(
 									  tags$h3("About plot"),
 									  HTML( 
-										str_c( "<p><strong>Oral Consumer Products Exposition:</strong> Oral Consumer Products Exposition of a product use category for a chemical is the summation of the direct incidental ingestion, direct aerosol ingestion and direct vapor ingestion.</p>",
+										str_c( "<p><strong>Oral Consumer Products Exposure:</strong> Oral Consumer Products Exposure of a product use category for a chemical is the summation of the direct incidental ingestion, direct aerosol ingestion and direct vapor ingestion.</p>",
 												"<p><strong>Mean:</strong> This value is calculating by getting the average of all the product categories of each chemical.</p>",
-												"<p><strong>Mean and Min over Oral Consumer Products Exposition:</strong> The Ac50 value is divided by the value closest to the 95th percentile of exposure.</p>"
+												"<p><strong>Mean and Min over Oral Consumer Products Exposure:</strong> The Ac50 value is divided by the value closest to the 95th percentile of exposure.</p>"
 										)
 									  ),
 									  circle = TRUE, status = "danger", icon = icon("question-circle"), width = "300px",
@@ -1267,5 +1282,6 @@ createBERUI = function( input, output, session, BERAnalysis, id ){
 		}
 	);
 	output$plot_BER_vs_Ac50 <- renderPlotly({BERAnalysis$getBERvsAc50plot()});
+	output$plot_OED_vs_Ac50 <- renderPlotly({BERAnalysis$getOEDvsAc50plot()});
 	output$plot_BER <- renderPlotly({BERAnalysis$getBERplot()});
 }
