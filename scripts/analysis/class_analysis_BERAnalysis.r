@@ -40,22 +40,23 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
 	#computes the Agregated table for BER analysis
     computerMeanTableBER = function(){
       if (self$BERData$calcBERStatsDataExists() && self$basicData$basicStatsDataExists()) {
-		private$tblMeanBER <- tribble(~casn,~name,~average_of_oral_consumer_products_exposure, ~min_oed_over_oral_consumer_products_exposure, ~mean_oed_over_oral_consumer_products_exposure);
+		private$tblMeanBER <- tribble(~casn,~name,~average_of_oral_consumer_products_exposure, ~minAC50, ~minOED,
+		                              ~min_oed_over_oral_consumer_products_exposure, ~mean_oed_over_oral_consumer_products_exposure);
 		#getting our private data
         calc_BER_stat_tbl <- self$BERData$getCalcBERStatsTable();
 		chemical_casn_list <- unique(calc_BER_stat_tbl[["casn"]]);
 		Ac50_stat_tbl <- self$basicData$getBasicStatsTable();
-		Ac50_stat_tbl<- filter(Ac50_stat_tbl, above_cutoff == "Y", ac50 >= -2, ac50 <= 1000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
+		Ac50_stat_tbl<- filter(Ac50_stat_tbl, above_cutoff == "Y", ac50 >= -2, ac50 <= 10000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
 		
 		for(chemical_casn in chemical_casn_list){
 			casn_tbl <- filter(calc_BER_stat_tbl, casn == chemical_casn);
 			ac50_tbl <- filter(Ac50_stat_tbl, casn == chemical_casn);
-			ac50_tbl <- filter(ac50_tbl, ac50 > ac_cutoff);
+			#ac50_tbl <- filter(ac50_tbl, ac50 > ac_cutoff);
 			avg_mean <- mean(casn_tbl$direct_ingestion + casn_tbl$direct_vapor + casn_tbl$direct_aerosol);
 			oral_ber <- (casn_tbl$direct_ingestion + casn_tbl$direct_vapor + casn_tbl$direct_aerosol);
 			avg_ac50 <- mean(10^ac50_tbl$ac50);
 			min_ac50 <- min(10^ac50_tbl$ac50);
-
+			
 			avg_oed <- mean(ac50_tbl$oed);
 			min_oed <- min(ac50_tbl$oed);
 			
@@ -66,13 +67,15 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
 			
 			private$tblMeanBER <- add_row(private$tblMeanBER, casn = chemical_casn, 
 						name = as.character(filter(calc_BER_stat_tbl, casn == chemical_casn) %>% select(name) %>% distinct(name)),
-						average_of_oral_consumer_products_exposure = signif(avg_mean, digits = 5),
+						average_of_oral_consumer_products_exposure = signif(avg_mean, digits = 5), minAC50 = min_ac50, minOED = min_oed,
 						min_oed_over_oral_consumer_products_exposure = signif(ifelse(is.nan(min_oed) || is.infinite(min_oed),0,min_ac50 / closest_to_95th), digits = 5),
 						mean_oed_over_oral_consumer_products_exposure = signif(ifelse(is.nan(avg_oed) || is.infinite(avg_oed),0,avg_ac50 / closest_to_95th), digits = 5));
 				
 			
 		}
-
+		private$tblMeanBER <- mutate(private$tblMeanBER, ac50Rank = rank(private$tblMeanBER$minAC50), oedRank = rank(private$tblMeanBER$minOED));
+		
+		
 		invisible(private$tblMeanBER);
      }   
     },
@@ -82,8 +85,13 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
       if (self$BERData$calcBERStatsDataExists() && self$basicData$basicStatsDataExists()) {
 		BER_data <- self$BERData$getCalcBERStatsTable();
 		BER_data$oral_ber <- BER_data$direct_ingestion + BER_data$direct_vapor + BER_data$direct_aerosol;
+		BER_data <- filter(BER_data, oral_ber > 0.00000001) %>%  drop_na(oral_ber); 
+		
 		basic_data <- self$basicData$getBasicStatsTable();
-		basic_data <- filter(basic_data, above_cutoff == "Y", ac50 >= -2, ac50 <= 1000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
+		basic_data <- filter(basic_data, above_cutoff == "Y", ac50 >= -2, ac50 <= 10000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
+		
+		
+		
 		if(label_by == "casn"){
 			private$pltBERvsAc50 <- plot_ly() %>%
 			  add_trace(data = BER_data, x = ~casn, y = ~signif(oral_ber, digits = 5), type = 'box', name = 'Daily Intake') %>%
@@ -110,7 +118,7 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
 	plotOEDvsAc50 = function( label_by = "casn"){
 	  if (self$BERData$calcBERStatsDataExists() && self$basicData$basicStatsDataExists()) {
 	    basic_data <- self$basicData$getBasicStatsTable();
-	    basic_data <- filter(basic_data, above_cutoff == "Y", ac50 >= -2, ac50 <= 1000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
+	    basic_data <- filter(basic_data, above_cutoff == "Y", ac50 >= -2, ac50 <= 10000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
 	    
 	    if(label_by == "casn"){
 	      private$pltOEDvsAc50 <- plot_ly() %>%
@@ -144,7 +152,7 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
     calc_BER_stat_tbl <- self$BERData$getCalcBERStatsTable();
 		chemical_casn_list <- unique(calc_BER_stat_tbl[["casn"]]);
 		Ac50_stat_tbl <- self$basicData$getBasicStatsTable();
-		Ac50_stat_tbl<- filter(Ac50_stat_tbl, above_cutoff == "Y", ac50 >= -2, ac50 <= 1000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
+		Ac50_stat_tbl<- filter(Ac50_stat_tbl, above_cutoff == "Y", ac50 >= -2, ac50 <= 10000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
 		
 		for(chemical_casn in chemical_casn_list){
 			

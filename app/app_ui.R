@@ -46,7 +46,7 @@ sidebar <- dashboardSidebar(
                                          "By Name" = "name") ),
              radioButtons(inputId = "radio_dbtype", label = "Database options:", selected = "rdata", width = "100%",
                           choices = list("MySQL: dreamtk_db (v0.7, based on httk-1.7, tcpl-v2)" = "mysql",
-                                         "RData: DreamTKv0.7.RData (based on httk-1.7, tcpl-v2)" = "rdata") ),
+                                         "RData: DreamTKv0.8.RData (based on httk-1.7, tcpl-v2)" = "rdata") ),
              uiOutput(outputId="ui_database_status")
              ), 
              id="li_quickoptions" )
