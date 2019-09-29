@@ -108,10 +108,10 @@ Class.Analysis.BERData <- R6Class("Class.Analysis.BERData",
 							#direct_vapor = trunc(direct_vapor_val * 10 ^ 6 * 10 ^ 5)/ 10 ^ 5,
 							#direct_aerosol = trunc(direct_aerosol_val * 10 ^ 6 * 10 ^ 5)/ 10 ^ 5);
 
-      				direct_dermal = (direct_dermal_val) / (10 ^ 3) / 70,
-      				direct_ingestion = (direct_ingestion_val ) / (10 ^ 3) / 70,
-      				direct_vapor = (direct_vapor_val )/ (10 ^ 3) / 70,
-      				direct_aerosol = (direct_aerosol_val )/ (10 ^ 3) /70 );
+      				direct_dermal = (direct_dermal_val) * 10 ^ 6  / (10 ^ 3) / 70,  #mg/kg/day
+      				direct_ingestion = (direct_ingestion_val ) * 10 ^ 6  / (10 ^ 3) / 70,
+      				direct_vapor = (direct_vapor_val ) * 10 ^ 6 / (10 ^ 3) / 70,
+      				direct_aerosol = (direct_aerosol_val )* 10 ^ 6 / (10 ^ 3) /70 );
   
 				
 				
