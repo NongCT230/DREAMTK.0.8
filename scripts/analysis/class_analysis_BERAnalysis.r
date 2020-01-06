@@ -80,61 +80,87 @@ Class.Analysis.BERAnalysis <- R6Class("Class.Analysis.BERAnalysis",
      }   
     },
 	
-	#plots the box chart comparing the values of the oral exposure vs the AC50 of chemicals
+	# plots the box chart comparing the values of the oral exposure vs the AC50 of chemicals
+	# October, 2019: Convert horizontal Box Plot to Vertical to accomodate different monitor styles. Plot now sorte by OED.
 	plotBERvsAc50 = function( label_by = "casn"){
-      if (self$BERData$calcBERStatsDataExists() && self$basicData$basicStatsDataExists()) {
-		BER_data <- self$BERData$getCalcBERStatsTable();
-		BER_data$oral_ber <- BER_data$direct_ingestion + BER_data$direct_vapor + BER_data$direct_aerosol;
-		BER_data <- filter(BER_data, oral_ber > 0.00000001) %>%  drop_na(oral_ber); 
-		
-		basic_data <- self$basicData$getBasicStatsTable();
-		basic_data <- filter(basic_data, above_cutoff == "Y", ac50 >= -2, ac50 <= 10000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
-		
-		
-		
-		if(label_by == "casn"){
-			private$pltBERvsAc50 <- plot_ly() %>%
-			  add_trace(data = BER_data, x = ~casn, y = ~signif(oral_ber, digits = 5), type = 'box', name = 'Daily Intake') %>%
-			  add_trace(data = basic_data, x = ~casn, y = ~signif(oed, digits = 5), type = 'box', name = 'Equivalent Dose') %>%
-			  layout(title = 'Consumer Product Exposure vs  In Vitro Tox Equivalent Dose',
-					 xaxis = list(title = ""),
-					 yaxis = list(title = "Dose - mg/kg/day", type = "log"));
-	
-		}else{
-			private$pltBERvsAc50 <- plot_ly() %>%
-			  add_trace(data = BER_data, x = ~name, y = ~signif(oral_ber, digits = 5), type = 'box', name = 'Daily intake') %>%
-			  add_trace(data = basic_data, x = ~name, y =~signif(oed, digits = 5), type = 'box', name = 'Equivalent Dose') %>%
-			  layout(title = 'Consumer Product Exposure vs In Vitro Tox Equivalent Dose',
-					 xaxis = list(title = ""),
-					 yaxis = list(title = "Dose - mg/kg/day", type = "log"));
-		
-		}
-		
-		invisible(private$pltBERvsAc50);
-     }   
-    },
+	  if (self$BERData$calcBERStatsDataExists() && self$basicData$basicStatsDataExists()) {
+	    BER_data <- self$BERData$getCalcBERStatsTable();
+	    BER_data$oral_ber <- BER_data$direct_ingestion + BER_data$direct_vapor + BER_data$direct_aerosol;
+	    BER_data <- filter(BER_data, oral_ber > 0.00000001) %>%  drop_na(oral_ber);
+	    
+	    basic_data <- self$basicData$getBasicStatsTable();
+	    basic_data <- filter(basic_data, above_cutoff == "Y", ac50 >= -2, ac50 <= 10000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
+	    
+	    # October, 2019: sort the basic_data dataframe by OED and create a new sorted_basic_data dataframe
+	    # the newly sorted casn and name columns will be used plot the box plots
+	    sorted_basic_data <- basic_data[order(as.double(basic_data$oed), decreasing = TRUE),];
+	    sorted_casn <- sorted_basic_data$casn;
+	    sorted_name <- sorted_basic_data$name;
+	    
+	    
+	    if(label_by == "casn"){
+	      private$pltBERvsAc50 <- plot_ly() %>%
+	        #add_trace(data = BER_data, x = ~casn, y = ~signif(oral_ber, digits = 5), type = 'box', name = 'Daily Intake') %>% # horizontal plot
+	        #add_trace(data = basic_data, x = ~casn, y = ~signif(oed, digits = 5), type = 'box', name = 'Equivalent Dose') %>% # horizontal plot
+	        add_trace(data = sorted_basic_data, x = ~signif(oed, digits = 5), y = ~casn, type = 'box', name = 'Equivalent Dose') %>% # vertical plot
+	        add_trace(data = BER_data, x = ~signif(oral_ber, digits = 5), y = ~casn, type = 'box', name = 'Daily Intake') %>% # vertical plot
+	        layout(title = 'Consumer Product Exposure vs  In Vitro Tox Equivalent Dose',
+	               xaxis = list(title = "Dose - mg/kg/day", type = "log"),
+	               yaxis = list(title = "", categoryarray = ~sorted_casn, categoryorder = "array"), # use sorted_casn to plot ordred boxes
+	               autosize = T);
+	      
+	    }else{
+	      private$pltBERvsAc50 <- plot_ly() %>%
+	        #add_trace(data = BER_data, x = ~name, y = ~signif(oral_ber, digits = 5), type = 'box', name = 'Daily intake') %>% # horizontal plot
+	        #add_trace(data = basic_data, x = ~name, y =~signif(oed, digits = 5), type = 'box', name = 'Equivalent Dose') %>% # horizontal plot
+	        add_trace(data = sorted_basic_data, x = ~signif(oed, digits = 5), y = ~name, type = 'box', name = 'Equivalent Dose') %>% # vertical plot
+	        add_trace(data = BER_data, x = ~signif(oral_ber, digits = 5), y = ~name, type = 'box', name = 'Daily intake') %>% # vertical plot
+	        layout(title = 'Consumer Product Exposure vs In Vitro Tox Equivalent Dose',
+	               xaxis = list(title = "Dose - mg/kg/day", type = "log"),
+	               yaxis = list(title = "", categoryarray = ~sorted_name, categoryorder = "array"), # use sorted_name to plot ordred boxes
+	               autosize = T);
+	      
+	    }
+	    
+	    invisible(private$pltBERvsAc50);
+	  }   
+	},
 
 	#plots the box chart comparing the values of the oral exposure vs the AC50 of chemicals
+	# October, 2019: Convert horizontal Box Plot to Vertical to accomodate different monitor styles. Plot now sorte by AC50.
 	plotOEDvsAc50 = function( label_by = "casn"){
 	  if (self$BERData$calcBERStatsDataExists() && self$basicData$basicStatsDataExists()) {
 	    basic_data <- self$basicData$getBasicStatsTable();
 	    basic_data <- filter(basic_data, above_cutoff == "Y", ac50 >= -2, ac50 <= 10000, cytotoxicity_um > 0.01) %>% drop_na(ac50);
 	    
+	    # October, 2019: sort the basic_data dataframe by AC50 and create a new sorted_basic_data dataframe
+	    # the newly sorted casn and name columns will be used plot the box plots
+	    sorted_basic_data <- basic_data[order(as.double(basic_data$ac50), decreasing = TRUE),];
+	    sorted_name <- sorted_basic_data$name;
+	    sorted_casn <- sorted_basic_data$casn;
+	    sorted_ac50 <- sorted_basic_data$ac50;
+	    
 	    if(label_by == "casn"){
 	      private$pltOEDvsAc50 <- plot_ly() %>%
-	        add_trace(data = basic_data, x = ~casn, y = ~signif(10^ac50, digits = 5), type = 'box', name = 'AC50') %>%
-	        add_trace(data = basic_data, x = ~casn, y = ~signif(oed, digits = 5), type = 'box', name = 'Equivalent Dose') %>%
+	        #add_trace(data = basic_data, x = ~casn, y = ~signif(10^ac50, digits = 5), type = 'box', name = 'AC50') %>% # horizontal plot
+	        #add_trace(data = basic_data, x = ~casn, y = ~signif(oed, digits = 5), type = 'box', name = 'Equivalent Dose') %>% # horizontal plot
+	        add_trace(data = sorted_basic_data, x = ~signif(oed, digits = 5), y = ~casn, type = 'box', name = 'Equivalent Dose') %>% # vertical plot
+	        add_trace(data = sorted_basic_data, x = ~signif(10^ac50, digits = 5), y = ~casn, type = 'box', name = 'AC50') %>% # vertical plot
 	        layout(title = 'In Vitro Tox Concentrations vs Equivalent Doses',
-	               xaxis = list(title = ""),
-	               yaxis = list(title = "Dose", type = "log"));
+	               xaxis = list(title = "Dose - mg/kg/day", type = "log"),
+	               yaxis = list(title = "", categoryarray = ~sorted_casn, categoryorder = "array"), # use sorted_casn to plot ordred boxes
+	               autosize = T);
 	      
 	    }else{
 	      private$pltOEDvsAc50 <- plot_ly() %>%
-	        add_trace(data = basic_data, x = ~name, y = ~signif(10^ac50, digits = 5), type = 'box', name = 'AC50') %>%
-	        add_trace(data = basic_data, x = ~name, y =~signif(oed, digits = 5), type = 'box', name = 'Equivalent Dose') %>%
+	        #add_trace(data = basic_data, x = ~name, y = ~signif(10^ac50, digits = 5), type = 'box', name = 'AC50') %>% # horizontal plot
+	        #add_trace(data = basic_data, x = ~name, y =~signif(oed, digits = 5), type = 'box', name = 'Equivalent Dose') %>% # horizontal plot
+	        add_trace(data = sorted_basic_data, x = ~signif(oed, digits = 5), y = ~name, type = 'box', name = 'Equivalent Dose') %>% # vertical plot
+	        add_trace(data = sorted_basic_data, x = ~signif(10^ac50, digits = 5), y = ~name, type = 'box', name = 'AC50') %>% # vertical plot
 	        layout(title = 'In Vitro Tox Concentrations vs Equivalent Doses',
-	               xaxis = list(title = ""),
-	               yaxis = list(title = "Dose", type = "log"));
+	               xaxis = list(title = "Dose - mg/kg/day", type = "log"),
+	               yaxis = list(title = "", categoryarray = ~sorted_name, categoryorder = "array"), # use sorted_name to plot ordred boxes
+	               autosize = T);
 	      
 	    }
 	    

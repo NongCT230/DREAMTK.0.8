@@ -1,0 +1,33 @@
+2019-12-18 11:38:03 INFO::Initializing logger...
+2019-12-18 11:38:03 INFO::Welcome to Dream.TK v0.8
+2019-12-18 11:38:03 INFO::Running on 18-12-2019 11:38:03
+2019-12-18 11:38:03 INFO::-------------------------------------------------
+2019-12-18 11:38:03 INFO::Starting function imports...
+2019-12-18 11:38:03 DEBUG::Imported ./www/busyIndicator.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/io_import_dreamtk/class_Database_MySQL.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/io_import_dreamtk/class_dataimporter_dreamtk.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/io_import_dreamtk/class_dataimporter_dreamtk_basicData.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/io_import_dreamtk/class_dataimporter_dreamtk_css3compss.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/io_import_dreamtk/class_dataimporter_dreamtk_fubpolynomial.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/io_import_dreamtk/class_dataimporter_dreamtk_fubpoulinhaddad2012.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/io_import_dreamtk/class_dataparser_dreamtk.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/io_import_dreamtk/killMySQLDBConnections.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/model/class_local_model.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/model/class_localmodel_css3compss.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/model/class_localmodel_fubpolynomial.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/model/class_localmodel_oed1storder.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/chemical_manager/class_chemical.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/chemical_manager/class_chemical_manager.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/chemical_manager/printFunctions.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/analysis/class_analysis_BasicAnalysis.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/analysis/class_analysis_BERAnalysis.r
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/analysis/class_analysis_BERData.r
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/analysis/class_analysis_data.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/analysis/class_analysis_MFA.R
+2019-12-18 11:38:03 DEBUG::Imported ./scripts/analysis/multiplot.R
+2019-12-18 11:38:03 DEBUG::Imported ./app/app_server.R
+2019-12-18 11:38:03 DEBUG::Imported ./app/app_support.R
+2019-12-18 11:38:04 DEBUG::Imported ./app/app_tutorial.R
+2019-12-18 11:38:04 DEBUG::Imported ./app/app_ui.R
+2019-12-18 11:38:08 INFO::Importing from R data file ...
+2019-12-18 11:38:08 INFO::Importing dreamtk v1.0 chemical data...

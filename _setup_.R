@@ -13,7 +13,7 @@ rm(list=ls());
 
 # Greeting ------------------------------------------------------------------
 
-info <- "Dream.TK v0.8"
+info <- "Dream.TK v0.8.0"
 
 print(paste0("Welcome to ", info));
 print(paste0("Running on ", format(Sys.Date(), "%d-%m-%Y"), " ", format(Sys.time(), "%H:%M:%S")));
